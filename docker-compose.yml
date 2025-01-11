@@ -1,0 +1,14 @@
+services:
+    yadi-backend:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: yadi-backend
+        env_file:
+            - .env
+        ports:
+            - ${PORT}:${PORT}
+
+networks:
+    default:
+        driver: bridge

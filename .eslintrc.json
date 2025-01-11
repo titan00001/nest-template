@@ -1,0 +1,77 @@
+{
+	"extends": [
+		"standard",
+		"plugin:import/recommended",
+		"plugin:n/recommended-module",
+		"plugin:promise/recommended",
+		"plugin:prettier/recommended"
+	],
+	"parserOptions": {
+		"ecmaVersion": 2020
+	},
+	"root": true,
+	"ignorePatterns": ["**/*"],
+	"plugins": [],
+	"overrides": [
+		{
+			"files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+			"rules": {
+				"comma-dangle": "off",
+				"semi": ["error", "always"],
+				"prefer-const": [
+					"error",
+					{
+						"destructuring": "any",
+						"ignoreReadBeforeAssign": false
+					}
+				],
+				"max-len": [
+					"error",
+					{
+						"code": 120,
+						"ignoreTrailingComments": true,
+						"ignoreUrls": true,
+						"ignoreStrings": true,
+						"ignoreTemplateLiterals": true,
+						"ignoreRegExpLiterals": true
+					}
+				],
+				"import/no-unresolved": "off",
+				"n/no-missing-import": "off",
+				"no-use-before-define": "off",
+				"no-useless-constructor": "off",
+				"new-cap": "off",
+				"import/no-extraneous-dependencies": "off",
+				"n/no-extraneous-import": "off",
+				"no-unused-vars": "off",
+				"@typescript-eslint/no-unused-vars": [
+					"error",
+					{ "argsIgnorePattern": "^_", "ignoreRestSiblings": true }
+				]
+			}
+		},
+		{
+			"files": ["*.spec.ts", "*.spec.tsx", "*.spec.js", "*.spec.jsx"],
+			"env": {
+				"mocha": true,
+				"jest": true
+			},
+			"rules": {}
+		},
+		{
+			"files": ["*.ts", "*.tsx", "*.js", "*.jsx", "*.json"],
+			"rules": {
+				"prettier/prettier": [
+					"error",
+					{
+						"useTabs": true,
+						"printWidth": 120,
+						"tabWidth": 4,
+						"singleQuote": true,
+						"semi": true
+					}
+				]
+			}
+		}
+	]
+}
