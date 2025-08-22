@@ -39,9 +39,17 @@ export class UserService {
 		return user;
 	}
 
-	async updatePassword(dto: UpdatePasswordDto): Promise<void> {
-		const { email, currentPassword, newPassword } = dto;
-		const user = await this.userModel.findOne({ email }).exec();
+	async updateUserById(id: string, dto: UpdateUserDto): Promise<User> {
+		const user = await this.userModel.findByIdAndUpdate(new mongoose.Types.ObjectId(id), dto, { new: true }).exec();
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		return user;
+	}
+
+	async updatePassword(id: string, dto: UpdatePasswordDto): Promise<void> {
+		const { currentPassword, newPassword } = dto;
+		const user = await this.userModel.findById(new mongoose.Types.ObjectId(id)).exec();
 		if (!user || !(await bcrypt.compare(currentPassword, user.password))) {
 			throw new NotFoundException('Invalid credentials');
 		}

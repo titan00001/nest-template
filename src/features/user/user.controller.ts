@@ -12,7 +12,7 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@ApiBearerAuth()
-	@ApiOperation({ summary: 'Update user password' })
+	@ApiOperation({ summary: 'Get user profile' })
 	@Get('profile')
 	async getProfile(@Req() req) {
 		const user = await this.userService.getUserById(req.user._id.toString());
@@ -20,28 +20,28 @@ export class UserController {
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Get(':email')
+	@Get(':id')
 	@ApiBearerAuth()
-	@ApiOperation({ summary: 'Get user by email' })
-	async getUser(@Param('email') email: string) {
-		return this.userService.getUser(email);
+	@ApiOperation({ summary: 'Get user by ID' })
+	async getUser(@Param('id') id: string) {
+		return this.userService.getUserById(id);
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Put(':email')
+	@Put(':id')
 	@ApiBearerAuth()
 	@ApiOperation({ summary: 'Update user information' })
 	@ApiBody({ type: UpdateUserDto })
-	async updateUser(@Param('email') email: string, @Body() updateUserDto: UpdateUserDto) {
-		return this.userService.updateUser(email, updateUserDto);
+	async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+		return this.userService.updateUserById(id, updateUserDto);
 	}
 
 	@UseGuards(JwtAuthGuard)
-	@Put(':email/password')
+	@Put(':id/password')
 	@ApiBearerAuth()
 	@ApiOperation({ summary: 'Update user password' })
 	@ApiBody({ type: UpdatePasswordDto })
-	async updatePassword(@Param('email') email: string, @Body() updatePasswordDto: UpdatePasswordDto) {
-		return this.userService.updatePassword(updatePasswordDto);
+	async updatePassword(@Param('id') id: string, @Body() updatePasswordDto: UpdatePasswordDto) {
+		return this.userService.updatePassword(id, updatePasswordDto);
 	}
 }
