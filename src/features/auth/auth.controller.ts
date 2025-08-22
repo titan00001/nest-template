@@ -9,6 +9,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { JwtRefreshGuard } from '@/core/guards/jwt-refresh.guard';
 import { JwtAuthGuard } from '@/core/guards/jwt-auth.guard';
+import { AuthResponseDto } from './dto/auth-response.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -23,14 +24,14 @@ export class AuthController {
 
 	@Post('login')
 	@ApiOperation({ summary: 'login by email and password' })
-	async login(@Body() loginDto: LoginDto, @Req() req) {
+	async login(@Body() loginDto: LoginDto, @Req() req): Promise<AuthResponseDto> {
 		return this.authService.login(loginDto, req);
 	}
 
 	@UseGuards(JwtRefreshGuard)
 	@Post('refresh')
 	@ApiOperation({ summary: 'Refresh access token using refresh token' })
-	async refresh(@Req() req, @Body() refreshTokenDto: RefreshTokenDto) {
+	async refresh(@Req() req, @Body() refreshTokenDto: RefreshTokenDto): Promise<AuthResponseDto> {
 		const userId = req.user._id.toString();
 		return this.authService.refreshToken(userId, refreshTokenDto.refreshToken, req);
 	}

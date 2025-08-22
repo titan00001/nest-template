@@ -1,0 +1,182 @@
+---
+alwaysApply: false
+---
+
+# 🎯 Cursor Rules: Entity ↔ DTO Separation
+
+## Core Principle
+**Entity = Internal Model (DB, business logic, private)**
+**DTO = External Contract (request in / response out)**
+
+## 🚨 Critical Rules
+
+### 1. **Never Return Entities Directly**
+```ts
+// ❌ WRONG
+return user; // Entity with password, tokens, etc.
+
+// ✅ CORRECT
+return UserMapper.toResponseDto(user);
+```
+
+### 2. **Always Use Mappers**
+```ts
+// Create mapper for each entity
+export class EntityMapper {
+  static toResponseDto(entity: Entity): ResponseDto {
+    return plainToInstance(ResponseDto, {
+      // Map only safe fields
+      id: entity._id,
+      name: entity.name,
+      // NEVER: password, tokens, internalFlags
+    }, { excludeExtraneousValues: true });
+  }
+}
+```
+
+### 3. **Use @Expose() for Whitelisting**
+```ts
+export class ResponseDto {
+  @Expose() id: string;      // ✅ Safe
+  @Expose() name: string;    // ✅ Safe
+  // password: string;       // ❌ Never expose
+}
+```
+
+### 4. **Handle Different Actors**
+```ts
+// Multiple DTOs for different contexts
+UserPublicDto    // Basic info
+UserAdminDto     // + sensitive fields
+UserSelfDto      // + personal data
+```
+
+### 5. **Computed Fields in DTOs**
+```ts
+export class ResponseDto {
+  @Expose()
+  get fullName(): string {
+    return `${this.firstName} ${this.lastName}`;
+  }
+}
+```
+
+## 📁 Folder Structure
+```
+feature/
+├── dto/
+│   ├── request.dto.ts      # Input validation
+│   ├── response.dto.ts     # Output contract
+│   └── update.dto.ts       # Partial updates
+├── mappers/
+│   └── entity.mapper.ts    # Entity ↔ DTO transformations
+├── entity.schema.ts        # Database model
+└── service.ts             # Business logic
+```
+
+## 🔄 Flow Pattern
+1. **Controller** receives DTO
+2. **Service** works with Entity
+3. **Mapper** transforms Entity → ResponseDTO
+4. **Controller** returns ResponseDTO
+
+## ⚠️ Edge Cases to Handle
+- Sensitive field leakage
+- Different shapes per actor
+- Partial updates (PATCH)
+- Nested relations
+- Computed/virtual fields
+- Pagination metadata
+- Error response DTOs
+
+## 🎯 Remember
+**DTOs are contracts, not just shapes. Keep them stable, versioned, and secure.**
+# 🎯 Cursor Rules: Entity ↔ DTO Separation
+
+## Core Principle
+**Entity = Internal Model (DB, business logic, private)**
+**DTO = External Contract (request in / response out)**
+
+## 🚨 Critical Rules
+
+### 1. **Never Return Entities Directly**
+```ts
+// ❌ WRONG
+return user; // Entity with password, tokens, etc.
+
+// ✅ CORRECT
+return UserMapper.toResponseDto(user);
+```
+
+### 2. **Always Use Mappers**
+```ts
+// Create mapper for each entity
+export class EntityMapper {
+  static toResponseDto(entity: Entity): ResponseDto {
+    return plainToInstance(ResponseDto, {
+      // Map only safe fields
+      id: entity._id,
+      name: entity.name,
+      // NEVER: password, tokens, internalFlags
+    }, { excludeExtraneousValues: true });
+  }
+}
+```
+
+### 3. **Use @Expose() for Whitelisting**
+```ts
+export class ResponseDto {
+  @Expose() id: string;      // ✅ Safe
+  @Expose() name: string;    // ✅ Safe
+  // password: string;       // ❌ Never expose
+}
+```
+
+### 4. **Handle Different Actors**
+```ts
+// Multiple DTOs for different contexts
+UserPublicDto    // Basic info
+UserAdminDto     // + sensitive fields
+UserSelfDto      // + personal data
+```
+
+### 5. **Computed Fields in DTOs**
+```ts
+export class ResponseDto {
+  @Expose()
+  get fullName(): string {
+    return `${this.firstName} ${this.lastName}`;
+  }
+}
+```
+
+## 📁 Folder Structure
+```
+feature/
+├── dto/
+│   ├── request.dto.ts      # Input validation
+│   ├── response.dto.ts     # Output contract
+│   └── update.dto.ts       # Partial updates
+├── mappers/
+│   └── entity.mapper.ts    # Entity ↔ DTO transformations
+├── entity.schema.ts        # Database model
+└── service.ts             # Business logic
+```
+
+## 🔄 Flow Pattern
+1. **Controller** receives DTO
+2. **Service** works with Entity
+3. **Mapper** transforms Entity → ResponseDTO
+4. **Controller** returns ResponseDTO
+
+## ⚠️ Edge Cases to Handle
+- Sensitive field leakage
+- Different shapes per actor
+- Partial updates (PATCH)
+- Nested relations
+- Computed/virtual fields
+- Pagination metadata
+- Error response DTOs
+
+## 🎯 Remember
+**DTOs are contracts, not just shapes. Keep them stable, versioned, and secure.**

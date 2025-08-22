@@ -26,6 +26,7 @@ export class ErrorInterceptor implements NestInterceptor {
 							LogLevel.error,
 						);
 					} else {
+						console.log('error:', error);
 						businessError = new BusinessError(
 							'INTERNAL_SERVER_ERROR',
 							error.message || 'Internal Server Error',

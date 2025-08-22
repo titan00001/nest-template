@@ -10,7 +10,7 @@ export class ParseJwtToUserPipe implements PipeTransform {
 	async transform(value: IJwtPayload, metadata: ArgumentMetadata): Promise<UserDocument | null> {
 		if (!value) return null;
 		if (!value.sub) return null;
-		const user = await this.userService.getUserById(value.sub);
+		const user = await this.userService.getUserEntityById(value.sub);
 		if (!user) return null;
 		const field = metadata.data;
 		delete user?.password;

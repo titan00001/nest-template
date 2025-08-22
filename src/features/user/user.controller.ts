@@ -5,6 +5,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { JwtAuthGuard } from '@/core/guards/jwt-auth.guard';
 import { ConfigService } from '@nestjs/config';
+import { UserResponseDto } from './dto/user-response.dto';
+import { SessionsResponseDto } from './dto/sessions-response.dto';
 
 @ApiTags('user')
 @Controller('user')
@@ -18,41 +20,24 @@ export class UserController {
 	@ApiBearerAuth()
 	@ApiOperation({ summary: 'Get user profile' })
 	@Get('profile')
-	async getProfile(@Req() req) {
-		const user = await this.userService.getUserById(req.user._id.toString());
-		return user;
+	async getProfile(@Req() req): Promise<UserResponseDto> {
+		return this.userService.getUserById(req.user._id.toString());
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@Get('sessions')
 	@ApiBearerAuth()
 	@ApiOperation({ summary: 'Get active sessions (only when multiple refresh tokens enabled)' })
-	async getActiveSessions(@Req() req) {
+	async getActiveSessions(@Req() req): Promise<SessionsResponseDto> {
 		const allowMultipleTokens = this.configService.get<boolean>('ALLOW_MULTIPLE_REFRESH_TOKENS');
-
-		if (!allowMultipleTokens) {
-			return { message: 'Multiple refresh tokens not enabled' };
-		}
-
-		const user = await this.userService.getUserById(req.user._id.toString());
-		return {
-			activeSessions: user.refreshTokens?.length || 0,
-			sessions:
-				user.refreshTokens?.map((token) => ({
-					deviceId: token.deviceId,
-					userAgent: token.userAgent,
-					ipAddress: token.ipAddress,
-					createdAt: token.createdAt,
-					lastUsedAt: token.lastUsedAt,
-				})) || [],
-		};
+		return this.userService.getSessionsResponse(req.user._id.toString(), allowMultipleTokens);
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@Get(':id')
 	@ApiBearerAuth()
 	@ApiOperation({ summary: 'Get user by ID' })
-	async getUser(@Param('id') id: string) {
+	async getUser(@Param('id') id: string): Promise<UserResponseDto> {
 		return this.userService.getUserById(id);
 	}
 
@@ -61,7 +46,7 @@ export class UserController {
 	@ApiBearerAuth()
 	@ApiOperation({ summary: 'Update user information' })
 	@ApiBody({ type: UpdateUserDto })
-	async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+	async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
 		return this.userService.updateUserById(id, updateUserDto);
 	}
 
@@ -70,7 +55,7 @@ export class UserController {
 	@ApiBearerAuth()
 	@ApiOperation({ summary: 'Update user password' })
 	@ApiBody({ type: UpdatePasswordDto })
-	async updatePassword(@Param('id') id: string, @Body() updatePasswordDto: UpdatePasswordDto) {
+	async updatePassword(@Param('id') id: string, @Body() updatePasswordDto: UpdatePasswordDto): Promise<void> {
 		return this.userService.updatePassword(id, updatePasswordDto);
 	}
 }

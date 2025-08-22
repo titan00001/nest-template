@@ -27,7 +27,7 @@ export class JwtRefreshGuard implements CanActivate {
 				secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
 			});
 
-			const user = await this.userService.getUserById(decoded.sub);
+			const user = await this.userService.getUserEntityById(decoded.sub);
 
 			if (!user) {
 				throw new BusinessError('UNAUTHORIZED', 'Invalid refresh token');

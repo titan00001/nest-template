@@ -8,6 +8,9 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { BusinessError } from '@/common/business-error';
+import { UserMapper } from './mappers/user.mapper';
+import { UserResponseDto } from './dto/user-response.dto';
+import { SessionsResponseDto } from './dto/sessions-response.dto';
 
 @Injectable()
 export class UserService {
@@ -16,14 +19,23 @@ export class UserService {
 		private readonly jwtService: JwtService,
 	) {}
 
-	async getUser(email: string): Promise<User> {
+	async getUser(email: string): Promise<UserResponseDto> {
 		const user = await this.userModel.findOne({ email }).exec();
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
-		return user;
+		return UserMapper.toResponseDto(user);
 	}
-	async getUserById(id: string): Promise<User> {
+
+	async getUserById(id: string): Promise<UserResponseDto> {
+		const user = await this.userModel.findById(new mongoose.Types.ObjectId(id)).exec();
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		return UserMapper.toResponseDto(user);
+	}
+
+	async getUserEntityById(id: string): Promise<UserDocument> {
 		const user = await this.userModel.findById(new mongoose.Types.ObjectId(id)).exec();
 		if (!user) {
 			throw new NotFoundException('User not found');
@@ -31,20 +43,20 @@ export class UserService {
 		return user;
 	}
 
-	async updateUser(email: string, dto: UpdateUserDto): Promise<User> {
+	async updateUser(email: string, dto: UpdateUserDto): Promise<UserResponseDto> {
 		const user = await this.userModel.findOneAndUpdate({ email }, dto, { new: true }).exec();
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
-		return user;
+		return UserMapper.toResponseDto(user);
 	}
 
-	async updateUserById(id: string, dto: UpdateUserDto): Promise<User> {
+	async updateUserById(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
 		const user = await this.userModel.findByIdAndUpdate(new mongoose.Types.ObjectId(id), dto, { new: true }).exec();
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
-		return user;
+		return UserMapper.toResponseDto(user);
 	}
 
 	async updatePassword(id: string, dto: UpdatePasswordDto): Promise<void> {
@@ -65,5 +77,13 @@ export class UserService {
 		} catch (error) {
 			throw new BusinessError('INVALID_TOKEN');
 		}
+	}
+
+	async getSessionsResponse(userId: string, multipleTokensEnabled: boolean): Promise<SessionsResponseDto> {
+		const user = await this.userModel.findById(new mongoose.Types.ObjectId(userId)).exec();
+		if (!user) {
+			throw new NotFoundException('User not found');
+		}
+		return UserMapper.toSessionsResponseDto(user, multipleTokensEnabled);
 	}
 }

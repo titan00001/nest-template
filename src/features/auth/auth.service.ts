@@ -12,6 +12,8 @@ import { JwtService } from '@nestjs/jwt';
 import { BusinessError } from '@/common/business-error';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
+import { AuthMapper } from './mappers/auth.mapper';
+import { AuthResponseDto } from './dto/auth-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -33,7 +35,7 @@ export class AuthService {
 		return user.save();
 	}
 
-	async login(dto: LoginDto, req?: Request): Promise<{ accessToken: string; refreshToken: string }> {
+	async login(dto: LoginDto, req?: Request): Promise<AuthResponseDto> {
 		const { email, password } = dto;
 		const user = await this.userModel.findOne({ email });
 		if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -43,14 +45,10 @@ export class AuthService {
 		const tokens = await this.generateTokens(user);
 		await this.updateRefreshToken(user._id.toString(), tokens.refreshToken, req);
 
-		return tokens;
+		return AuthMapper.toAuthResponseDto(tokens.accessToken, tokens.refreshToken);
 	}
 
-	async refreshToken(
-		userId: string,
-		refreshToken: string,
-		req?: Request,
-	): Promise<{ accessToken: string; refreshToken: string }> {
+	async refreshToken(userId: string, refreshToken: string, req?: Request): Promise<AuthResponseDto> {
 		const user = await this.userModel.findById(userId);
 		if (!user) {
 			throw new BusinessError('UNAUTHORIZED', 'Invalid refresh token');
@@ -88,7 +86,7 @@ export class AuthService {
 		const tokens = await this.generateTokens(user);
 		await this.updateRefreshToken(user._id.toString(), tokens.refreshToken, req);
 
-		return tokens;
+		return AuthMapper.toAuthResponseDto(tokens.accessToken, tokens.refreshToken);
 	}
 
 	async logout(userId: string, refreshToken?: string): Promise<void> {
