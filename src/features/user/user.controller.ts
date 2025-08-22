@@ -4,11 +4,15 @@ import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { JwtAuthGuard } from '@/core/guards/jwt-auth.guard';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('user')
 @Controller('user')
 export class UserController {
-	constructor(private readonly userService: UserService) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly configService: ConfigService,
+	) {}
 
 	@UseGuards(JwtAuthGuard)
 	@ApiBearerAuth()
@@ -17,6 +21,31 @@ export class UserController {
 	async getProfile(@Req() req) {
 		const user = await this.userService.getUserById(req.user._id.toString());
 		return user;
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get('sessions')
+	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Get active sessions (only when multiple refresh tokens enabled)' })
+	async getActiveSessions(@Req() req) {
+		const allowMultipleTokens = this.configService.get<boolean>('ALLOW_MULTIPLE_REFRESH_TOKENS');
+
+		if (!allowMultipleTokens) {
+			return { message: 'Multiple refresh tokens not enabled' };
+		}
+
+		const user = await this.userService.getUserById(req.user._id.toString());
+		return {
+			activeSessions: user.refreshTokens?.length || 0,
+			sessions:
+				user.refreshTokens?.map((token) => ({
+					deviceId: token.deviceId,
+					userAgent: token.userAgent,
+					ipAddress: token.ipAddress,
+					createdAt: token.createdAt,
+					lastUsedAt: token.lastUsedAt,
+				})) || [],
+		};
 	}
 
 	@UseGuards(JwtAuthGuard)

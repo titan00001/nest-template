@@ -14,16 +14,14 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-refres
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 			ignoreExpiration: false,
-			secretOrKey: configService.get<string>('JWT_SECRET'),
-			passReqToCallback: true,
+			secretOrKey: configService.get<string>('JWT_REFRESH_SECRET'),
 		});
 	}
 
-	async validate(req) {
-		const refreshToken = req.get('Authorization').replace('Bearer', '').trim();
-		const user = await this.userService.getUserFromJwt(refreshToken);
+	async validate(payload: any) {
+		const user = await this.userService.getUserById(payload.sub);
 		if (!user) {
-			throw new BusinessError('UNAUTHORIZED');
+			throw new BusinessError('UNAUTHORIZED', 'Invalid token');
 		}
 		return user;
 	}

@@ -10,4 +10,7 @@ export const ConfigurationSchema = Joi.object({
 	API_URL: Joi.string().required(),
 	SENDGRID_API_KEY: Joi.string().required(),
 	JWT_SECRET: Joi.string().required(),
+	JWT_REFRESH_SECRET: Joi.string().required(),
+	/* Auth */
+	ALLOW_MULTIPLE_REFRESH_TOKENS: Joi.boolean().default(false).description('Allow multiple refresh tokens per user'),
 });
