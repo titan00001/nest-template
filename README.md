@@ -8,7 +8,8 @@
 
 ```bash
 # clone the repository
-$ git clone https://github.com/titan00001/nest-template
+# use a shallow clone to avoid fetching full commit history
+$ git clone --depth=1 https://github.com/titan00001/nest-template
 
 # change the directory to nest-template
 $ cd nest-template
